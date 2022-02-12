@@ -1,27 +1,22 @@
-from django.shortcuts import render, redirect
+from django.db.models import Q
+from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView
 from django.views.generic.base import View
-from .models import Category, Movie
+from .models import Actor, Genre, Movie
 from .forms import ReviewForm
 
 
-# class MovieView(View):
-#     """List Movies"""
-#
-#     def get(self, request):
-#         movies = Movie.objects.all()
-#         return render(request, 'movies/movie_list.html', {'movie_list': movies})
+class GenresYears:
+    """Genres and release dates"""
+
+    def get_genres(self):
+        return Genre.objects.all()
+
+    def get_years(self):
+        return Movie.objects.filter(draft=False).values('year')
 
 
-# class MovieDetailView(View):
-#     """Description movie"""
-#
-#     def get(self, request, slug):
-#         movie = Movie.objects.get(url=slug)
-#         return render(request, 'movies/movie_detail.html', {'movie': movie})
-
-
-class MovieView(ListView):
+class MovieView(GenresYears, ListView):
     """List Movies"""
 
     model = Movie
@@ -33,7 +28,7 @@ class MovieView(ListView):
     #     return context
 
 
-class MovieDetailView(DetailView):
+class MovieDetailView(GenresYears, DetailView):
     """Description movie"""
 
     model = Movie
@@ -54,3 +49,22 @@ class AddReview(View):
             # form.movie_id = pk
             form.save()
         return redirect(movie.get_absolute_url())
+
+
+class ActorDetailView(GenresYears, DetailView):
+    """Bio actor or director"""
+
+    model = Actor
+    slug_field = 'name'
+
+
+class FilterMoviesView(GenresYears, ListView):
+    """Filter movies"""
+
+    def get_queryset(self):
+        queryset = Movie.objects.filter(
+            Q(year__in=self.request.GET.getlist('year')) |
+            Q(genres__in=self.request.GET.getlist('genre'))
+        )
+        print(queryset)
+        return queryset
