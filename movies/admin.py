@@ -1,8 +1,19 @@
+from django import forms
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 from .models import (Actor, Category, Genre, Movie, MovieShots, Rating,
                      RatingStar, Reviews)
+
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
+
+
+class MovieAdminForm(forms.ModelForm):
+    description = forms.CharField(label='Desc', widget=CKEditorUploadingWidget())
+
+    class Meta:
+        model = Movie
+        fields = '__all__'
 
 
 # class ReviewInLine(admin.StackedInline):
@@ -59,10 +70,12 @@ class MovieAdmin(admin.ModelAdmin):
     list_display = ('title', 'tagline', 'year', 'category', 'url', 'draft')
     list_filter = ('category', 'year')
     search_fields = ('title', 'category__name')
-    inlines = [MovieShotsInline, ReviewInLine, ]
+    # inlines = [MovieShotsInline, ReviewInLine, ]
     save_on_top = True
     save_as = True
     list_editable = ('draft',)
+    actions = ('publish', 'unpublish')
+    form = MovieAdminForm
     readonly_fields = ('get_image',)
     fieldsets = (
         (None, {
@@ -88,6 +101,32 @@ class MovieAdmin(admin.ModelAdmin):
 
     def get_image(self, obj):
         return mark_safe(f'<img src={obj.poster.url} width="100" height="110">')
+
+    def publish(self, request, queryset):
+        """Publish movie"""
+
+        row_update = queryset.update(draft=False)
+        if row_update == 1:
+            message = '1 запись была обновлена'
+        else:
+            message = f'{row_update} записей были обновлены'
+        self.message_user(request, f'{message}')
+
+    def unpublish(self, request, queryset):
+        """Unpublish movie"""
+
+        row_update = queryset.update(draft=True)
+        if row_update == 1:
+            message = '1 запись была обновлена'
+        else:
+            message = f'{row_update} записей были обновлены'
+        self.message_user(request, f'{message}')
+
+    publish.short_description = 'Publish'
+    publish.allowed_permissions = ('change',)
+
+    unpublish.short_description = 'Unpublish'
+    unpublish.allowed_permissions = ('change',)
 
     get_image.short_description = 'Poster'
 
