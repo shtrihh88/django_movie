@@ -35,7 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.flatpages',
     'movies',
+    'contact',
     'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
 INTERNAL_IPS = [
@@ -207,3 +211,5 @@ RECAPTCHA_PUBLIC_KEY = "6LfRFnoeAAAAAPvtOaWfJUSDa1kjON9T2PDNzApC"
 RECAPTCHA_PRIVATE_KEY = "6LfRFnoeAAAAAFmPBKkbMw6trctZteIbmfvFKhlq"
 RECAPTCHA_DEFAULT_ACTION = 'generic'
 RECAPTCHA_SCORE_THRESHOLD = 0.5
+
+SITE_ID = 1
